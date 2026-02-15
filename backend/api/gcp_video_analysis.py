@@ -8,9 +8,10 @@ import json
 import time
 import uuid
 import asyncio
-from google.cloud import videointelligence
-from google.cloud import storage
 from google.api_core.exceptions import GoogleAPICallError, RetryError
+
+# Lazy imports - will import when function is called
+# This prevents import errors if credentials aren't set at startup
 
 # Ensure GOOGLE_APPLICATION_CREDENTIALS env var is set to your service account key JSON path
 BUCKET_NAME = "soundscape-ai-uploads-shivam"
@@ -26,6 +27,10 @@ async def analyze_video(video_path: str) -> str:
         A detailed string description of the video content.
     """
     try:
+        # Import here to avoid import errors at module load time
+        from google.cloud import videointelligence
+        from google.cloud import storage
+        
         # 1. Upload to GCS
         storage_client = storage.Client()
         bucket = storage_client.bucket(BUCKET_NAME)

@@ -28,6 +28,26 @@ from api.combine_media import combine_video_audio, get_video_duration
 # Load environment variables from .env file
 load_dotenv()
 
+# Handle Google Cloud credentials for Railway deployment
+# Railway doesn't support file paths, so we accept JSON content and write it to a file
+GOOGLE_CREDENTIALS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+if GOOGLE_CREDENTIALS_JSON:
+    # Railway deployment: Write JSON content to a temp file
+    credentials_path = os.path.join(tempfile.gettempdir(), "google-credentials.json")
+    try:
+        # Parse to validate JSON, then write
+        credentials_data = json.loads(GOOGLE_CREDENTIALS_JSON)
+        with open(credentials_path, "w") as f:
+            json.dump(credentials_data, f)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_path
+        print(f"[Startup] Google credentials loaded from JSON env var → {credentials_path}")
+    except json.JSONDecodeError as e:
+        print(f"[Startup] Warning: Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}")
+    except Exception as e:
+        print(f"[Startup] Warning: Failed to write Google credentials: {e}")
+elif not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+    print("[Startup] Warning: No Google credentials configured (GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS_JSON)")
+
 # Rate limiting configuration
 limiter = Limiter(key_func=get_remote_address)
 
