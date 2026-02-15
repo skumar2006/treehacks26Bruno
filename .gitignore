@@ -1,0 +1,15 @@
+.env
+backend/.env
+backend/outputs/
+frontend/.env
+*.mp4
+*.webm
+*.mov
+*.avi
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+node_modules/
+.next/
