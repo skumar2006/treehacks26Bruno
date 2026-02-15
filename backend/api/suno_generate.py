@@ -76,9 +76,11 @@ async def generate_audio(prompt: str, tags: str = "", duration: float = None, ne
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             print(f"[Suno] API Error: {e.response.text}")
-            raise RuntimeError(f"Suno API failed with status {e.response.status_code}")
+            # Return user-friendly message for any Suno API error
+            raise RuntimeError("We ran out of API credits. Please try again later.")
         except httpx.HTTPError as e:
-            raise RuntimeError(f"Failed to connect to Suno API: {e}")
+            print(f"[Suno] Connection Error: {e}")
+            raise RuntimeError("We ran out of API credits. Please try again later.")
 
         result = response.json()
         
@@ -143,7 +145,8 @@ async def _poll_for_completion(client: httpx.AsyncClient, gen_id: str, headers: 
             return audio_url
         elif status == "error":
             error_msg = status_obj.get("metadata", {}).get("error_message", "Unknown error")
-            raise RuntimeError(f"Suno generation failed: {error_msg}")
+            print(f"[Suno] Generation error: {error_msg}")
+            raise RuntimeError("We ran out of API credits. Please try again later.")
 
         await asyncio.sleep(POLL_INTERVAL)
         elapsed += POLL_INTERVAL
@@ -159,7 +162,8 @@ async def _download_audio(client: httpx.AsyncClient, audio_url: str) -> str:
         response = await client.get(audio_url)
         response.raise_for_status()
     except httpx.HTTPError as e:
-        raise RuntimeError(f"Failed to download audio from {audio_url}: {e}")
+        print(f"[Suno] Download error: {e}")
+        raise RuntimeError("We ran out of API credits. Please try again later.")
 
     # Save to temp file
     suffix = ".mp3"
