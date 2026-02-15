@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Test</title>
+</head>
+<body>
+    <h1>Direct Video Test</h1>
+    <video controls width="800" src="http://localhost:8000/api/outputs/output_videoplayback.mp4">
+        Your browser doesn't support HTML video.
+    </video>
+
+    <hr>
+
+    <h2>Fetch + Blob URL Test</h2>
+    <video id="blobVideo" controls width="800">
+        Your browser doesn't support HTML video.
+    </video>
+
+    <script>
+        // Test fetching and creating blob URL
+        fetch('http://localhost:8000/api/outputs/output_videoplayback.mp4')
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Content-Type:', response.headers.get('content-type'));
+                console.log('Content-Length:', response.headers.get('content-length'));
+                return response.blob();
+            })
+            .then(blob => {
+                console.log('Blob size:', blob.size, 'type:', blob.type);
+                const url = URL.createObjectURL(blob);
+                console.log('Blob URL:', url);
+                document.getElementById('blobVideo').src = url;
+            })
+            .catch(err => console.error('Error:', err));
+    </script>
+</body>
+</html>
